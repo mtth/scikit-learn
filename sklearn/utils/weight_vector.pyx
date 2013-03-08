@@ -124,3 +124,12 @@ cdef class WeightVector(object):
     cdef double norm(self):
         """The L2 norm of the weight vector. """
         return sqrt(self.sq_norm)
+
+    cdef void make_non_negative(self):
+        """Sets negative values to 0.0."""
+        cdef int j
+        cdef DOUBLE* w_data_ptr = self.w_data_ptr
+
+        for j in range(self.n_features):
+            w_data_ptr[j] = w_data_ptr[j] if w_data_ptr[j] >= 0.0 else 0.0
+

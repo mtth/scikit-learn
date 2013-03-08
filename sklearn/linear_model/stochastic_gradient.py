@@ -29,6 +29,7 @@ from .sgd_fast import SquaredLoss
 from .sgd_fast import Huber
 from .sgd_fast import EpsilonInsensitive
 from .sgd_fast import SquaredEpsilonInsensitive
+from .sgd_fast import Poisson
 
 
 LEARNING_RATE_TYPES = {"constant": 1, "optimal": 2, "invscaling": 3,
@@ -296,6 +297,7 @@ class BaseSGDClassifier(BaseSGD, LinearClassifierMixin):
         "epsilon_insensitive": (EpsilonInsensitive, DEFAULT_EPSILON),
         "squared_epsilon_insensitive": (SquaredEpsilonInsensitive,
                                         DEFAULT_EPSILON),
+        "poisson": (Poisson, ),
     }
 
     def __init__(self, loss="hinge", penalty='l2', alpha=0.0001, l1_ratio=0.15,

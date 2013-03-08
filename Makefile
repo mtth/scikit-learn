@@ -7,7 +7,8 @@ CYTHON ?= cython
 NOSETESTS ?= nosetests
 CTAGS ?= ctags
 
-all: clean inplace test
+# all: clean inplace test
+all: clean cython inplace
 
 clean-pyc:
 	find sklearn -name "*.pyc" | xargs rm -f

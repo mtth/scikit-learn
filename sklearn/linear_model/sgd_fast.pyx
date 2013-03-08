@@ -131,6 +131,40 @@ cdef class ModifiedHuber(Classification):
         return ModifiedHuber, ()
 
 
+cdef class Poisson(Classification):
+    """Poisson loss for binary classification with y in {-1, 1}
+
+    """
+    cpdef double loss(self, double p, double y):
+        if y < 0.0:
+            return p if p > 0.0 else 0.0
+        else:
+            if p > 18.0:
+                return exp(-p)
+            elif p <= 0.0:
+                # shouldn't happen
+                # print('p should be non negative')
+                return 1.0
+            else:
+                return -log(1.0 - exp(-p))
+
+    cpdef double dloss(self, double p, double y):
+        if y < 0.0:
+            return 1.0 if p > 0.0 else 0.0
+        else:
+            if p > 18.0:
+                return -exp(-p)
+            elif p <= 0.0:
+                # shouldn't happen
+                # print('p should be non negative')
+                return -1.0
+            else:
+                return -1.0 / (exp(p) - 1.0)
+
+    def __reduce__(self):
+        return Poisson, ()
+
+
 cdef class Hinge(Classification):
     """Hinge loss for binary classification tasks with y in {-1,1}
 
@@ -418,6 +452,7 @@ def plain_sgd(np.ndarray[DOUBLE, ndim=1, mode='c'] weights,
     cdef unsigned int epoch = 0
     cdef unsigned int i = 0
     cdef int is_hinge = isinstance(loss, Hinge)
+    cdef int is_poisson = isinstance(loss, Poisson)
 
     # q vector is only used for L1 regularization
     cdef np.ndarray[DOUBLE, ndim = 1, mode = "c"] q = None
@@ -443,6 +478,10 @@ def plain_sgd(np.ndarray[DOUBLE, ndim=1, mode='c'] weights,
         for i in range(n_samples):
             dataset.next( & x_data_ptr, & x_ind_ptr, & xnnz, & y,
                          & sample_weight)
+
+            if is_poisson:
+                # only non-negative weights allowed
+                w.make_non_negative()
 
             p = w.dot(x_data_ptr, x_ind_ptr, xnnz) + intercept
 
